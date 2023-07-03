@@ -1,16 +1,20 @@
 import React from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { TextField } from "@mui/material";
+import { TextField, Checkbox, FormControlLabel } from "@mui/material";
 const PHONENUMBER_REGEX = /^[0-9]+$/;
 
 const SignupSchema = Yup.object().shape({
   phoneNumber: Yup.string()
     .max(10, "Too Long!")
     .required("Mobile number is required"),
+  acceptTerms: Yup.boolean().oneOf(
+    [true],
+    "Accept the terms to continue forward."
+  ),
 });
 
-const Initial = ({ handleFormStep }) => {
+const Initial = ({ handleFormStep, setFormDetails }) => {
   return (
     <React.Fragment>
       <h1
@@ -21,9 +25,15 @@ const Initial = ({ handleFormStep }) => {
         Welcome to Credmudra
       </h1>
       <Formik
-        initialValues={{ phoneNumber: "" }}
+        initialValues={{ phoneNumber: "", acceptTerms: false }}
         validationSchema={SignupSchema}
         onSubmit={(values, { setSubmitting }) => {
+          setFormDetails((prev) => ({
+            ...prev,
+            phoneNumber: values.phoneNumber,
+          }));
+          console.log(values);
+          handleFormStep("otp");
           setSubmitting(false);
         }}
       >
@@ -36,9 +46,7 @@ const Initial = ({ handleFormStep }) => {
           isSubmitting,
         }) => (
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-            }}
+            onSubmit={handleSubmit}
             style={{ display: "flex", flexDirection: "column" }}
           >
             <label htmlFor="phoneNumber" style={{ color: "white" }}>
@@ -63,6 +71,19 @@ const Initial = ({ handleFormStep }) => {
               style={{ backgroundColor: "gray" }}
             />
             <span style={{ color: "red" }}>{errors.phoneNumber}</span>
+            <div>
+              <FormControlLabel
+                style={{ color: "white" }}
+                control={<Checkbox checked={values.acceptTerms} />}
+                label="
+                By continuing, I agree to Credmudra's Privacy Policy and Terms &
+                Conditions and receive communications from Credmudra via SMS,
+                E-mail, and WhatsApp."
+                name="acceptTerms"
+                onChange={handleChange}
+              />
+            </div>
+            <span style={{ color: "red" }}>{errors.acceptTerms}</span>
             <button type="submit" disabled={isSubmitting}>
               Next
             </button>
